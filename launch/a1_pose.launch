@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="base_frame" default="base_link" />
+
+    <!-- imu transform -->
+    <node pkg="imu_transform" type="imu_transformer_node" name="imu_transformer_node" output="screen">
+        <remap from="imu_in/data" to="imu_raw"/>
+        <param name="target_frame" value="base_footprint"/>
+    </node>
+
+    <node if="$(arg publish_local_odom_tf)" pkg="robot_localization" type="ekf_localization_node" name="base_to_footprint_ekf">
+        <remap from="odometry/filtered" to="odom/local" />
+        <param name="base_link_frame" value="$(arg base_frame)" />
+        <rosparam command="load" file="$(find a1_pose)/config/ekf/base_to_footprint.yaml" />
+    </node>
+
+    <!-- <node if="$(arg publish_odom)" pkg="robot_localization" type="ekf_localization_node" name="footprint_to_odom_ekf">
+    <remap from="odometry/filtered" to="odom" />
+    <rosparam command="load" file="$(find champ_base)/config/ekf/footprint_to_odom.yaml" />
+    <param name="publish_tf" value="$(arg publish_odom_tf)"/>
+    <param name="imu0" value="$(arg imu_topic)"/>
+    </node> -->
+</launch>
