@@ -87,52 +87,21 @@ class A1JointStates:
         leg_joints = leg_joints + self.get_leg_joint(
             pose.x - self.robot_size_x, pose.y + self.robot_size_y, pose.z
         )
-        print("FRONT RIGHT=======")
-        print(leg_joints[0:3])
+
         pose = msg.polygon.points[1]
         leg_joints = leg_joints + self.get_leg_joint(
             pose.x - self.robot_size_x, pose.y - self.robot_size_y, pose.z
         )
-        print("FRONT LEFT=======")
-        print(leg_joints[3:6])
         pose = msg.polygon.points[2]
         leg_joints = leg_joints + self.get_leg_joint(
             pose.x + self.robot_size_x, pose.y + self.robot_size_y, pose.z
         )
-        print("REAR RIGHT=======")
-        print(leg_joints[6:9])
         pose = msg.polygon.points[3]
         leg_joints = leg_joints + self.get_leg_joint(
             pose.x + self.robot_size_x, pose.y - self.robot_size_y, pose.z
         )
-        print("REAR LEFT=======")
-        print(leg_joints[9:12])
-
-        # pose = msg.polygon.points[0]
-        # leg_joints = leg_joints + self.get_leg_joint(
-        #     pose.x - self.robot_size_x, 0, pose.z
-        # )
-        # pose = msg.polygon.points[1]
-        # leg_joints = leg_joints + self.get_leg_joint(
-        #     pose.x - self.robot_size_x, 0, pose.z
-        # )
-        # pose = msg.polygon.points[2]
-        # leg_joints = leg_joints + self.get_leg_joint(
-        #     pose.x + self.robot_size_x, 0, pose.z
-        # )
-        # pose = msg.polygon.points[3]
-        # leg_joints = leg_joints + self.get_leg_joint(
-        #     pose.x + self.robot_size_x, 0, pose.z
-        # )
-
-        # for pose in msg.polygon.points:
-        #     leg_joint = self.get_leg_joint(pose.x, pose.y, pose.z)
-        #     leg_joints = leg_joints + leg_joint
 
         self.joint_states_msg_.position = leg_joints
-
-        # print("RAW LEG JOINTS ==================")
-        # print(leg_joints)
 
         leg_vels = [0] * 12
         self.joint_states_msg_.velocity = leg_vels
@@ -143,13 +112,13 @@ class A1JointStates:
     def feet_force_cb(self, msg: FeetForces):
         leg_contact = [False, False, False, False]
 
-        if msg.fr_foot_force.force.z > 0.001:
+        if msg.fr_foot_force.force.z > 70:
             leg_contact[0] = True
-        if msg.fl_foot_force.force.z > 0.001:
+        if msg.fl_foot_force.force.z > 70:
             leg_contact[1] = True
         if msg.rr_foot_force.force.z > 0.001:
             leg_contact[2] = True
-        if msg.rl_foot_force.force.z > 0.001:
+        if msg.rl_foot_force.force.z > 70:
             leg_contact[3] = True
 
         self.feet_contacts_msg_.contacts = leg_contact
@@ -183,9 +152,6 @@ class A1JointStates:
             self.l3 * math.sin(thetha3), self.l2 + self.l3 * math.cos(thetha3)
         )
 
-        # thetha2 = 0
-        # thetha3 = 0
-
         return [thetha1, thetha2, thetha3]
 
     def run(self):
@@ -198,11 +164,6 @@ class A1JointStates:
             # joint states
             self.joint_states_msg_.header.seq = self.seq
             self.joint_states_msg_.header.stamp = rospy.Time.now()
-
-            # print("JOINT NAMES ====================")
-            # print(self.joint_states_msg_.name)
-            # print("JOINT VALUES ===================")
-            # print(self.joint_states_msg_.position)
 
             self.joint_state_pub_.publish(self.joint_states_msg_)
             self.foot_contacts_pub_.publish(self.feet_contacts_msg_)

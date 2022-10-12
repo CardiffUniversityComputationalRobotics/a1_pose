@@ -10,25 +10,26 @@
     <!-- ==================== STATE ESTIMATION ==================== -->
     <node pkg="champ_base" name="state_estimator" type="state_estimation_node" output="screen">
         <param name="orientation_from_imu" value="true"/>
-        <remap from="/imu/data" to="/imu_raw"/>
+        <param name="use_robot_pose" value="true"/>
+        <param name="use_robot_velocity" value="true"/>
+        <param name="publish_tf" value="true"/>
+        <remap from="/imu/data" to="/imu_out/data"/>
     </node>
+
+    <node pkg="tf" type="static_transform_publisher" name="trunk_to_dummy_imu" args="0 0 -0.3 0 0 0 trunk imu_link_dummy 100" />
 
     <!-- imu transform -->
-    <!-- <node pkg="imu_transformer" type="imu_transformer_node" name="imu_transformer_node" output="screen">
+    <node pkg="imu_transformer" type="imu_transformer_node" name="imu_transformer_node" output="screen">
         <remap from="imu_in/data" to="imu_raw"/>
-        <param name="target_frame" value="base_footprint"/>
-    </node> -->
-
-    <node pkg="robot_localization" type="ekf_localization_node" name="base_to_footprint_ekf">
-        <remap from="odometry/filtered" to="odom/local" />
-        <param name="base_link_frame" value="$(arg base_frame)" />
-        <rosparam command="load" file="$(find a1_pose)/config/ekf/base_to_footprint.yaml" />
+        <param name="target_frame" value="imu_link_dummy"/>
     </node>
+
 
     <node pkg="robot_localization" type="ekf_localization_node" name="footprint_to_odom_ekf">
         <remap from="odometry/filtered" to="odom" />
         <rosparam command="load" file="$(find a1_pose)/config/ekf/footprint_to_odom.yaml" />
         <param name="publish_tf" value="$(arg publish_odom_tf)"/>
-        <param name="imu0" value="/imu_raw"/>
+        <param name="imu0" value="/imu_out/data"/>
     </node>
+
 </launch>
