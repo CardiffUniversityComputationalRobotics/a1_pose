@@ -1,23 +1,23 @@
 <?xml version="1.0"?>
 <launch>
 
-    <arg name="base_frame" default="base_link" />
+    <arg name="base_frame" default="base" />
 
     <arg name="publish_odom_tf" default="true"/>
 
     <node pkg="a1_pose" type="a1_joint_states.py" name="a1_joint_states_node" output="screen" />
 
     <!-- ==================== STATE ESTIMATION ==================== -->
-    <node if="$(arg run_state_estimation)" pkg="champ_base" name="state_estimator" type="state_estimation_node" output="screen">
+    <node pkg="champ_base" name="state_estimator" type="state_estimation_node" output="screen">
         <param name="orientation_from_imu" value="true"/>
-        <remap from="/imu/data" to="/imu_out/data"/>
+        <remap from="/imu/data" to="/imu_raw"/>
     </node>
 
     <!-- imu transform -->
-    <node pkg="imu_transform" type="imu_transformer_node" name="imu_transformer_node" output="screen">
+    <!-- <node pkg="imu_transformer" type="imu_transformer_node" name="imu_transformer_node" output="screen">
         <remap from="imu_in/data" to="imu_raw"/>
         <param name="target_frame" value="base_footprint"/>
-    </node>
+    </node> -->
 
     <node pkg="robot_localization" type="ekf_localization_node" name="base_to_footprint_ekf">
         <remap from="odometry/filtered" to="odom/local" />
@@ -29,6 +29,6 @@
         <remap from="odometry/filtered" to="odom" />
         <rosparam command="load" file="$(find a1_pose)/config/ekf/footprint_to_odom.yaml" />
         <param name="publish_tf" value="$(arg publish_odom_tf)"/>
-        <param name="imu0" value="/imu_out/data"/>
+        <param name="imu0" value="/imu_raw"/>
     </node>
 </launch>

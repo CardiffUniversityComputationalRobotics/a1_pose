@@ -59,7 +59,23 @@ class A1JointStates:
         self.joint_states_msg_ = JointState()
         self.joint_states_msg_.name = self.joint_names_
 
+        leg_joints = [0] * 12
+        self.joint_states_msg_.position = leg_joints
+
+        leg_vels = [0] * 12
+        self.joint_states_msg_.velocity = leg_vels
+
+        leg_efforts = [0] * 12
+        self.joint_states_msg_.effort = leg_efforts
+
         self.feet_contacts_msg_ = ContactsStamped()
+
+        leg_contact = [False, False, False, False]
+
+        self.feet_contacts_msg_.contacts = leg_contact
+
+        self.robot_size_x = 0.1805
+        self.robot_size_y = 0.047
 
         self.rate = rospy.Rate(100)
 
@@ -67,11 +83,56 @@ class A1JointStates:
 
         leg_joints = []
 
-        for pose in msg.polygon.points:
-            leg_joint = self.get_leg_joint(pose.x, pose.y, pose.z)
-            leg_joints = leg_joints + leg_joint
+        pose = msg.polygon.points[0]
+        leg_joints = leg_joints + self.get_leg_joint(
+            pose.x - self.robot_size_x, pose.y + self.robot_size_y, pose.z
+        )
+        print("FRONT RIGHT=======")
+        print(leg_joints[0:3])
+        pose = msg.polygon.points[1]
+        leg_joints = leg_joints + self.get_leg_joint(
+            pose.x - self.robot_size_x, pose.y - self.robot_size_y, pose.z
+        )
+        print("FRONT LEFT=======")
+        print(leg_joints[3:6])
+        pose = msg.polygon.points[2]
+        leg_joints = leg_joints + self.get_leg_joint(
+            pose.x + self.robot_size_x, pose.y + self.robot_size_y, pose.z
+        )
+        print("REAR RIGHT=======")
+        print(leg_joints[6:9])
+        pose = msg.polygon.points[3]
+        leg_joints = leg_joints + self.get_leg_joint(
+            pose.x + self.robot_size_x, pose.y - self.robot_size_y, pose.z
+        )
+        print("REAR LEFT=======")
+        print(leg_joints[9:12])
+
+        # pose = msg.polygon.points[0]
+        # leg_joints = leg_joints + self.get_leg_joint(
+        #     pose.x - self.robot_size_x, 0, pose.z
+        # )
+        # pose = msg.polygon.points[1]
+        # leg_joints = leg_joints + self.get_leg_joint(
+        #     pose.x - self.robot_size_x, 0, pose.z
+        # )
+        # pose = msg.polygon.points[2]
+        # leg_joints = leg_joints + self.get_leg_joint(
+        #     pose.x + self.robot_size_x, 0, pose.z
+        # )
+        # pose = msg.polygon.points[3]
+        # leg_joints = leg_joints + self.get_leg_joint(
+        #     pose.x + self.robot_size_x, 0, pose.z
+        # )
+
+        # for pose in msg.polygon.points:
+        #     leg_joint = self.get_leg_joint(pose.x, pose.y, pose.z)
+        #     leg_joints = leg_joints + leg_joint
 
         self.joint_states_msg_.position = leg_joints
+
+        # print("RAW LEG JOINTS ==================")
+        # print(leg_joints)
 
         leg_vels = [0] * 12
         self.joint_states_msg_.velocity = leg_vels
@@ -93,7 +154,7 @@ class A1JointStates:
 
         self.feet_contacts_msg_.contacts = leg_contact
 
-    def get_leg_joint(self, x, y, z, side="left"):
+    def get_leg_joint(self, x, y, z):
 
         # hip - thigh - calf
 
@@ -106,20 +167,24 @@ class A1JointStates:
             - math.pow(self.l3, 2)
         ) / (2 * self.l2 * self.l3)
 
-        thetha1 = -math.atan2(-y, x) - math.atan2(
-            math.sqrt(math.pow(x, 2) + math.pow(y, 2) - math.pow(self.l1, 2), -self.l1)
-        )
+        # thetha1 = -math.atan2(-y, x) - math.atan2(
+        #     math.sqrt(math.pow(x, 2) + math.pow(y, 2) - math.pow(self.l1, 2)), -self.l1
+        # )
 
-        if side == "right":
-            thetha3 = math.atan2(math.sqrt(1 - math.pow(D)), D)
-        else:
-            thetha3 = math.atan2(-math.sqrt(1 - math.pow(D, 2)), D)
+        thetha1 = 0
+
+        thetha3 = math.atan2(-math.sqrt(1 - math.pow(D, 2)), D)
 
         thetha2 = math.atan2(
-            z, math.sqrt(math.pow(x, 2) + math.pow(y, 2) - math.pow(self.l1))
-        ) - math.atan2(
+            z, math.sqrt(math.pow(x, 2) + math.pow(y, 2) + 40 * self.l1)
+        )
+
+        thetha2 = thetha2 - math.atan2(
             self.l3 * math.sin(thetha3), self.l2 + self.l3 * math.cos(thetha3)
         )
+
+        # thetha2 = 0
+        # thetha3 = 0
 
         return [thetha1, thetha2, thetha3]
 
@@ -133,6 +198,11 @@ class A1JointStates:
             # joint states
             self.joint_states_msg_.header.seq = self.seq
             self.joint_states_msg_.header.stamp = rospy.Time.now()
+
+            # print("JOINT NAMES ====================")
+            # print(self.joint_states_msg_.name)
+            # print("JOINT VALUES ===================")
+            # print(self.joint_states_msg_.position)
 
             self.joint_state_pub_.publish(self.joint_states_msg_)
             self.foot_contacts_pub_.publish(self.feet_contacts_msg_)
