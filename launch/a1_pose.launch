@@ -24,12 +24,4 @@
         <param name="target_frame" value="imu_link_dummy"/>
     </node>
 
-
-    <node pkg="robot_localization" type="ekf_localization_node" name="footprint_to_odom_ekf">
-        <remap from="odometry/filtered" to="odom" />
-        <rosparam command="load" file="$(find a1_pose)/config/ekf/footprint_to_odom.yaml" />
-        <param name="publish_tf" value="$(arg publish_odom_tf)"/>
-        <param name="imu0" value="/imu_out/data"/>
-    </node>
-
 </launch>
