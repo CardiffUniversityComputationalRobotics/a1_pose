@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="base_frame" default="base" />
+
+    <arg name="publish_odom_tf" default="true"/>
+
+    <node pkg="a1_pose" type="a1_joint_states.py" name="a1_joint_states_node" output="screen" />
+
+    <!-- ==================== STATE ESTIMATION ==================== -->
+    <node pkg="champ_base" name="state_estimator" type="state_estimation_node" output="screen">
+        <param name="orientation_from_imu" value="true"/>
+        <param name="use_robot_pose" value="true"/>
+        <param name="use_robot_velocity" value="true"/>
+        <param name="publish_tf" value="true"/>
+        <remap from="/imu/data" to="/imu_out/data"/>
+    </node>
+
+    <node pkg="tf" type="static_transform_publisher" name="trunk_to_dummy_imu" args="0 0 -0.3 0 0 0 trunk imu_link_dummy 100" />
+
+    <!-- imu transform -->
+    <node pkg="imu_transformer" type="imu_transformer_node" name="imu_transformer_node" output="screen">
+        <remap from="imu_in/data" to="imu_raw"/>
+        <param name="target_frame" value="imu_link_dummy"/>
+    </node>
+
+</launch>
