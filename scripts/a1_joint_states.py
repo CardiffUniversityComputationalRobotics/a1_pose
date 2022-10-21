@@ -116,7 +116,7 @@ class A1JointStates:
             leg_contact[0] = True
         if msg.fl_foot_force.force.z > 70:
             leg_contact[1] = True
-        if msg.rr_foot_force.force.z > 0.001:
+        if msg.rr_foot_force.force.z > 70:
             leg_contact[2] = True
         if msg.rl_foot_force.force.z > 70:
             leg_contact[3] = True
