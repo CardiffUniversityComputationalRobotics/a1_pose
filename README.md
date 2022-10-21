@@ -26,3 +26,5 @@ To publish the joint states, the node in `a1_joint_states.py` is used, which has
 ## Odometry
 
 Additionally, to estimate odometry, we use the node `state_estimation_node` from `champ_base` package which publishes the `odom` transform and the data to the topic `odom/raw`.
+
+For a complete execution of all the mentioned above, check the launch file `a1_pose.launch` in this package.
