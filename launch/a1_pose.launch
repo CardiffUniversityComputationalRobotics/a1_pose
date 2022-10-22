@@ -16,7 +16,11 @@
         <remap from="/imu/data" to="/imu_out/data"/>
     </node>
 
-    <node pkg="tf" type="static_transform_publisher" name="trunk_to_dummy_imu" args="0 0 -0.3 0 0 0 trunk imu_link_dummy 100" />
+    <node pkg="a1_pose" type="imu_dummy_tf.py" name="imu_to_imu_dummy_tf" output="screen">
+        <param name="z_offset" value="-0.3"/>
+        <param name="parent_frame" value="imu_link"/>
+        <param name="child_frame" value="imu_link_dummy"/>
+    </node>
 
     <!-- imu transform -->
     <node pkg="imu_transformer" type="imu_transformer_node" name="imu_transformer_node" output="screen">
